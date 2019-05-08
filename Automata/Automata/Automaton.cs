@@ -21,6 +21,10 @@ namespace Automata
             }
         }
 
+        public Automaton()
+        {
+            this.Alphabet = new HashSet<U>();
+        }
 
         public Automaton(HashSet<U> alphabet)
         {
@@ -47,24 +51,14 @@ namespace Automata
             return true;
         }
 
-        public virtual bool addStartTransition(U input, T fromState, T toState)
+        public virtual bool addStartState(T state)
         {
-            bool success = addTransition(input, fromState, toState);
-            if (success)
-            {
-                StartStates.Add(fromState);
-            }
-            return success;
+            return StartStates.Add(state);
         }
 
-        public bool addEndTransition(U input, T fromState, T toState)
+        public bool addEndState(T state)
         {
-            bool success = addTransition(input, fromState, toState);
-            if (success)
-            {
-                EndStates.Add(fromState);
-            }
-            return success;
+            return EndStates.Add(state);
         }
     }
 }

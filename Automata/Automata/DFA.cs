@@ -5,15 +5,19 @@ namespace Automata
 {
     class DFA<T, U> : Automaton<T, U>
     {
+        public DFA() : base()
+        {
+        }
+
         public DFA(HashSet<U> alphabet) : base(alphabet)
         {
         }
 
-        public override bool addStartTransition(U input, T fromState, T toState)
+        public override bool addStartState(T state)
         {
             // Only add startstate when there are 0 startStates, otherwise return false.
             return base.StartStates.Count == 0
-                ? base.addStartTransition(input, fromState, toState)
+                ? base.addStartState(state)
                 : false;
         }
 
