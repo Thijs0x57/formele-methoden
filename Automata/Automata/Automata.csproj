@@ -46,6 +46,7 @@
     <Compile Include="Automaton.cs" />
     <Compile Include="AutomatonInvalidException.cs" />
     <Compile Include="DFA.cs" />
+    <Compile Include="NDFA.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

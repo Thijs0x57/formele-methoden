@@ -13,13 +13,6 @@ namespace Automata
         public HashSet<U> Alphabet { get; protected set; }
         public HashSet<T> StartStates { get; protected set; } = new HashSet<T>();
         public HashSet<T> EndStates { get; protected set; } = new HashSet<T>();
-        public bool IsValid
-        {
-            get
-            {
-                return true;
-            }
-        }
 
         public Automaton()
         {
@@ -30,6 +23,8 @@ namespace Automata
         {
             this.Alphabet = alphabet;
         }
+
+        public abstract bool isValid();
 
         public bool addTransition(U input, T fromState, T toState)
         {

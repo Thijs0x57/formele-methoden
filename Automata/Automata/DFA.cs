@@ -23,7 +23,7 @@ namespace Automata
 
         public bool accept(U[] input)
         {
-            if (!base.IsValid)
+            if (!isValid())
             {
                 throw new AutomatonInvalidException();
             }
@@ -34,6 +34,19 @@ namespace Automata
             }
 
             return EndStates.Contains(currState);
+        }
+
+        public override bool isValid()
+        {
+            bool result = false;
+            if(base.StartStates.Count == 1 && base.EndStates.Count > 0)
+            {
+                foreach (Dictionary<U,T> t in Transitions.Values.ToArray())
+                {
+                   result = t.Keys.ToHashSet() == base.Alphabet;
+                }
+            }
+            return result;
         }
     }
 }
