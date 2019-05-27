@@ -7,53 +7,17 @@ namespace Automata
      * <typeparam name="U" Alphabet type
      * 
      */
-    abstract class Automaton<T, U>
+    interface Automaton<T, U>
     {
-        public Dictionary<T, Dictionary<U, T>> Transitions { get; protected set; } = new Dictionary<T, Dictionary<U, T>>();
-        public HashSet<U> Alphabet { get; protected set; }
-        public HashSet<T> StartStates { get; protected set; } = new HashSet<T>();
-        public HashSet<T> EndStates { get; protected set; } = new HashSet<T>();
+        bool addTransition(U input, T fromState, T toState);
 
-        public Automaton()
-        {
-            this.Alphabet = new HashSet<U>();
-        }
+        bool addStartState(T state);
 
-        public Automaton(HashSet<U> alphabet)
-        {
-            this.Alphabet = alphabet;
-        }
+        bool addEndState(T state);
 
-        public abstract bool isValid();
+        bool isValid();
 
-        public bool addTransition(U input, T fromState, T toState)
-        {
-            // Check if state and input already exists (it shouldn't)
-            if (!Transitions.ContainsKey(fromState))
-            {
-                // Add the transition to the automaton
-                Transitions.Add(fromState, new Dictionary<U, T>());
-            }
-            // Check if input already exists
-            if (Transitions[fromState].ContainsKey(input))
-            {
-                // if it already exists we don't need to add it, so the method returns false
-                return false;
-            }
-            // Add input to alphabet so the alphabet can dynamically be changed
-            Alphabet.Add(input);
-            Transitions[fromState].Add(input, toState);
-            return true;
-        }
+        bool accept(U[] input);
 
-        public virtual bool addStartState(T state)
-        {
-            return StartStates.Add(state);
-        }
-
-        public bool addEndState(T state)
-        {
-            return EndStates.Add(state);
-        }
     }
 }

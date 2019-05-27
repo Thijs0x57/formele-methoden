@@ -1,25 +1,68 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Automata
 {
     class NDFA<T, U> : Automaton<T, U>
     {
-        public NDFA() : base()
+        public Dictionary<T, Dictionary<U, HashSet<T>>> Transitions { get; private set; } = new Dictionary<T, Dictionary<U, HashSet<T>>>();
+        public HashSet<U> Alphabet { get; private set; } = new HashSet<U>();
+        public HashSet<T> StartStates { get; private set; } = new HashSet<T>();
+        public HashSet<T> EndStates { get; private set; } = new HashSet<T>();
+        public U Epsilon { get; private set; }
+
+        public NDFA(U epsilon)
         {
+            Epsilon = epsilon;
         }
 
-        public NDFA(HashSet<U> alphabet) : base(alphabet)
+        public bool addTransition(U input, T fromState, T toState)
         {
+            // Add from state if non existant
+            if (!Transitions.ContainsKey(fromState))
+            {
+                Transitions.Add(fromState, new Dictionary<U, HashSet<T>>());
+            }
+
+            if (Transitions[fromState].ContainsKey(input))
+            {
+                // Add to state to existing input.
+                return Transitions[fromState][input].Add(toState);
+            }
+            else
+            {
+                // Add input to alphabet (except for epsilon) so the alphabet can dynamically be changed
+                if (!input.Equals(Epsilon))
+                {
+                    Alphabet.Add(input);
+                }
+                // Add input with to state.
+                Transitions[fromState].Add(input, new HashSet<T>() { toState });
+                return true;
+            }
         }
 
-        public override bool addStartState(T state)
+        public bool addStartState(T state)
         {
-            // Add startstate.
-            return base.StartStates.Add(state);
+            return StartStates.Add(state);
+        }
+
+        public bool addEndState(T state)
+        {
+            return EndStates.Add(state);
+        }
+
+        public bool isValid()
+        {
+            bool result = false;
+            if (StartStates.Count > 0 && EndStates.Count > 0)
+            {
+                foreach (Dictionary<U, HashSet<T>> t in Transitions.Values.ToArray())
+                {
+                    result = t.Keys.Count > 0;
+                }
+            }
+            return result;
         }
 
         public bool accept(U[] input)
@@ -28,30 +71,34 @@ namespace Automata
             {
                 throw new AutomatonInvalidException();
             }
-            var currStates = base.StartStates.ToList();
+
+            var currStates = StartStates;
             foreach (U u in input)
             {
-                for  (int i = 0; i < currStates.Count; i++)
+                if (!Alphabet.Contains(u))
                 {
-                    currStates[i] = base.Transitions[currStates[i]][u];
+                    throw new System.ArgumentException($"{u} is not part of alphabet");
                 }
-                currStates = currStates.Distinct().ToList();
-            }
-
-            return EndStates.Intersect(currStates).Count() != 0;
-        }
-
-        public override bool isValid()
-        {
-            bool result = false;
-            if (base.StartStates.Count > 0 && base.EndStates.Count > 0)
-            {
-                foreach (Dictionary<U, T> t in Transitions.Values.ToArray())
+                HashSet<T> newStates = new HashSet<T>();
+                foreach (T state in currStates)
                 {
-                    result = t.Keys.Count > 0;
+                    if (!Transitions.ContainsKey(state))
+                    {
+                        continue;
+                    }
+                    if (Transitions[state].ContainsKey(Epsilon))
+                    {
+                        newStates.UnionWith(Transitions[state][Epsilon]);
+                    }
+                    if (Transitions[state].ContainsKey(u))
+                    {
+                        newStates.UnionWith(Transitions[state][u]);
+                    }
                 }
+                currStates = newStates;
             }
-            return result;
+            
+            return EndStates.Intersect(currStates).Count() > 0;
         }
     }
 }

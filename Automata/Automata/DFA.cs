@@ -5,20 +5,57 @@ namespace Automata
 {
     class DFA<T, U> : Automaton<T, U>
     {
-        public DFA() : base()
+        public Dictionary<T, Dictionary<U, T>> Transitions { get; protected set; } = new Dictionary<T, Dictionary<U, T>>();
+        public HashSet<U> Alphabet { get; protected set; } = new HashSet<U>();
+        public T StartState { get; protected set; }
+        public HashSet<T> EndStates { get; protected set; } = new HashSet<T>();
+
+        public virtual bool addTransition(U input, T fromState, T toState)
         {
+            // Check if state and input already exists
+            if (!Transitions.ContainsKey(fromState))
+            {
+                // Add the transition to the automaton
+                Transitions.Add(fromState, new Dictionary<U, T>());
+            }
+            // Check if input already exists
+            if (Transitions[fromState].ContainsKey(input))
+            {
+                // if it already exists we don't need to add it, so the method returns false
+                return false;
+            }
+            // Add input to alphabet so the alphabet can dynamically be changed
+            Alphabet.Add(input);
+            Transitions[fromState].Add(input, toState);
+            return true;
         }
 
-        public DFA(HashSet<U> alphabet) : base(alphabet)
-        {
-        }
-
-        public override bool addStartState(T state)
+        public bool addStartState(T state)
         {
             // Only add startstate when there are 0 startStates, otherwise return false.
-            return base.StartStates.Count == 0
-                ? base.addStartState(state)
+            return StartState == null
+                ? addStartState(state)
                 : false;
+        }
+
+        public bool addEndState(T state)
+        {
+            return EndStates.Add(state);
+        }
+        public bool isValid()
+        {
+            if (StartState == null || EndStates.Count == 0)
+            {
+                return false;
+            }
+            foreach (Dictionary<U, T> t in Transitions.Values.ToArray())
+            {
+                if (!t.Keys.ToHashSet().SetEquals(Alphabet))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         public bool accept(U[] input)
@@ -27,26 +64,17 @@ namespace Automata
             {
                 throw new AutomatonInvalidException();
             }
-            var currState = base.StartStates.First();
+            var currState = StartState;
             foreach (U u in input)
             {
-                currState = base.Transitions[currState][u];
+                if (!Alphabet.Contains(u))
+                {
+                    throw new System.ArgumentException($"{u} is not part of alphabet");
+                }
+                currState = Transitions[currState][u];
             }
 
             return EndStates.Contains(currState);
-        }
-
-        public override bool isValid()
-        {
-            bool result = false;
-            if(base.StartStates.Count == 1 && base.EndStates.Count > 0)
-            {
-                foreach (Dictionary<U,T> t in Transitions.Values.ToArray())
-                {
-                   result = t.Keys.ToHashSet() == base.Alphabet;
-                }
-            }
-            return result;
         }
     }
 }

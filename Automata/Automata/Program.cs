@@ -12,9 +12,8 @@ namespace Automata
              *  bevat een even aantal b’s en eindigt op aab
              *  begint met abb en bevat baab
              */
-
             // Begint met abb of eindigt op baab
-            DFA<int, char> dfa = new DFA<int, char>();
+            Automaton<int, char> dfa = new DFA<int, char>();
             dfa.addStartState(0);
             dfa.addEndState(3);
             dfa.addEndState(8);
@@ -49,6 +48,30 @@ namespace Automata
             tester(test, dfa.accept(test.ToCharArray()));
             test = "aaaaaaabbbbbb";
             tester(test, dfa.accept(test.ToCharArray()));
+
+            Automaton<int, char> ndfa = new NDFA<int, char>('$');
+            ndfa.addStartState(1);
+            ndfa.addEndState(9);
+            ndfa.addTransition('a', 1, 1);
+            ndfa.addTransition('b', 1, 1);
+            ndfa.addTransition('$', 1, 2);
+            ndfa.addTransition('$', 1, 9);
+            ndfa.addTransition('$', 2, 4);
+            ndfa.addTransition('$', 2, 6);
+            ndfa.addTransition('a', 4, 5);
+            ndfa.addTransition('$', 5, 3);
+            ndfa.addTransition('$', 2, 6);
+            ndfa.addTransition('b', 6, 7);
+            ndfa.addTransition('c', 7, 8);
+            ndfa.addTransition('$', 8, 9);
+            ndfa.addTransition('$', 3, 2);
+            ndfa.addTransition('$', 3, 9);
+            ndfa.addTransition('$', 1, 9);
+            // Ends with a, or bc
+            String ndfaTest = "acbe";
+            tester(ndfaTest, ndfa.accept(ndfaTest.ToCharArray()));
+            ndfaTest = "bbabaabbbca";
+            tester(ndfaTest, ndfa.accept(ndfaTest.ToCharArray()));
         }
 
         public static void tester(String stringToTest, bool accepted)
