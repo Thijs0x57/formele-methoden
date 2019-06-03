@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Automata
@@ -14,6 +15,21 @@ namespace Automata
         public NDFA(U epsilon)
         {
             Epsilon = epsilon;
+        }
+
+        public NDFA(U epsilon, NDFA<T, U> ndfa1, NDFA<T, U> ndfa2)
+        {
+            Epsilon = epsilon;
+            if (ndfa1 != null) Alphabet.UnionWith(ndfa1.Alphabet);
+            if (ndfa2 != null) Alphabet.UnionWith(ndfa2.Alphabet);
+            Transitions
+                = ndfa1 != null && ndfa2 != null
+                ? ndfa1.Transitions.Concat(ndfa2.Transitions).ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
+                : ndfa1 != null
+                ? ndfa1.Transitions
+                : ndfa2 != null
+                ? ndfa2.Transitions
+                : Transitions;
         }
 
         public bool addTransition(U input, T fromState, T toState)
@@ -97,7 +113,7 @@ namespace Automata
                 }
                 currStates = newStates;
             }
-            
+
             return EndStates.Intersect(currStates).Count() > 0;
         }
     }

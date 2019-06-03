@@ -88,7 +88,7 @@ namespace Automata
             ndfa.addTransition('$', 3, 9);
             ndfa.addTransition('$', 1, 9);
             // Ends with a, or bc
-            String ndfaTest = "acb";
+            string ndfaTest = "acb";
             tester(ndfaTest, ndfa.accept(ndfaTest.ToCharArray()));
             ndfaTest = "bbabaabbbca";
             tester(ndfaTest, ndfa.accept(ndfaTest.ToCharArray()));
@@ -113,18 +113,22 @@ namespace Automata
             expr4 = expr3.plus();
             // expr5: "(baa | baa)+ (a|b)*"
             expr5 = expr4.dot(all);
+            // converting to NDFA
+            NDFA<string, char> ndfa = expr5.toNDFA();
+            string ndfaTest = "baab";
+            tester(ndfaTest, ndfa.accept(ndfaTest.ToCharArray()));
         }
 
         public static void testLanguage()
         {
             Console.WriteLine("--------------Regex--------------");
-            Console.WriteLine("taal van (baa):\n" + string.Join(" ", expr1.getLanguage(5)));
-            Console.WriteLine("taal van (bb):\n" + string.Join(" ", expr2.getLanguage(5)));
-            Console.WriteLine("taal van (baa | bb):\n" + string.Join(" ", expr3.getLanguage(5)));
+            Console.WriteLine("1. taal van (baa):\n" + string.Join(" ", expr1.getLanguageUntilLength(1)));
+            Console.WriteLine("2. taal van (bb):\n" + string.Join(" ", expr2.getLanguageUntilLength(1)));
+            Console.WriteLine("3. taal van (baa | bb):\n" + string.Join(" ", expr3.getLanguageUntilLength(2)));
             
-            Console.WriteLine("taal van (a|b)*:\n" + string.Join(" ", all.getLanguage(5)));
-            Console.WriteLine("taal van (baa | bb)+:\n" + string.Join(" ", expr4.getLanguage(5)));
-            Console.WriteLine("taal van (baa | bb)+ (a|b)*:\n" + string.Join(" ", expr5.getLanguage(6)));
+            Console.WriteLine("4. taal van (a|b)*:\n" + string.Join(" ", all.getLanguageUntilLength(3)));
+            Console.WriteLine("5. taal van (baa | bb)+:\n" + string.Join(" ", expr4.getLanguageUntilLength(4)));
+            Console.WriteLine("6. taal van (baa | bb)+ (a|b)*:\n" + string.Join(" ", expr5.getLanguageUntilLength(4)));
         }
     }
 }
