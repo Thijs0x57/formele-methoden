@@ -76,5 +76,51 @@ namespace Automata
 
             return EndStates.Contains(currState);
         }
+
+        public DFA<T[], U> and(DFA<T, U> other)
+        {
+            if (Alphabet != other.Alphabet)
+                return null;
+            var curr = new T[] { StartState, other.StartState };
+            var result = new DFA<T[], U>();
+            result.addStartState(curr);
+            while (result.Transitions.Count() < Transitions.Count * other.Transitions.Count())
+            {
+                foreach (var terminal in Alphabet)
+                {
+                    var next = new T[2];
+                    if (Transitions.ContainsKey(curr[0]))
+                    {
+                        next[0] = Transitions[curr[0]][terminal];
+                    }
+                    if (other.Transitions.ContainsKey(curr[1]))
+                    {
+                        next[1] = other.Transitions[curr[1]][terminal];
+                    }
+                    if (EndStates.Contains(curr[0]) && other.EndStates.Contains(curr[1]))
+                    {
+                        result.addEndState(curr);
+                    }
+                    result.addTransition(terminal, curr, next);
+                    curr = next;
+                }
+            }
+            return result;
+        }
+
+        public DFA<T, U> or(DFA<T, U> other)
+        {
+            return null;
+        }
+
+        public DFA<T, U> negative()
+        {
+            DFA<T, U> result = new DFA<T, U>();
+            result.addStartState(StartState);
+            result.Transitions = Transitions;
+
+
+            return null;
+        }
     }
 }

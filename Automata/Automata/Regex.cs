@@ -137,25 +137,25 @@ namespace Automata
             return languageResult;
         }
 
-        public NDFA<string, char> toNDFA()
+        public NDFA<int, char> toNDFA(ref int i)
         {
-            NDFA<string, char> ndfaLeft = left?.toNDFA();
-            NDFA<string, char> ndfaRight = right?.toNDFA();
-            var ndfa = new NDFA<string, char>('$', ndfaLeft, ndfaRight);
+            NDFA<int, char> ndfaLeft = left?.toNDFA(ref i);
+            NDFA<int, char> ndfaRight = right?.toNDFA(ref i);
+            var ndfa = new NDFA<int, char>('$', ndfaLeft, ndfaRight);
             switch (op)
             {
                 case Operator.ONE:
-                    var currState = Guid.NewGuid().ToString();
+                    var currState = ++i;
                     ndfa.addStartState(currState);
                     foreach (var terminal in terminals)
                     {
-                        ndfa.addTransition(terminal, currState, currState = Guid.NewGuid().ToString());
+                        ndfa.addTransition(terminal, currState, currState = ++i);
                     }
                     ndfa.addEndState(currState);
                     break;
                 case Operator.OR:
-                    var orStartState = Guid.NewGuid().ToString();
-                    var orEndState = Guid.NewGuid().ToString();
+                    var orStartState = ++i;
+                    var orEndState = ++i;
                     ndfa.addStartState(orStartState);
                     ndfa.addTransition(ndfa.Epsilon, orStartState, ndfaLeft.StartStates.First());
                     ndfa.addTransition(ndfa.Epsilon, orStartState, ndfaRight.StartStates.First());
@@ -169,10 +169,10 @@ namespace Automata
                     ndfa.addTransition(ndfa.Epsilon, ndfaLeft.EndStates.Last(), ndfaRight.StartStates.First());
                     break;
                 case Operator.PLUS:
-                    ndfa = plusAndStarOperatorHandlerCalledByToNDFA(ndfa, ndfaLeft);
+                    ndfa = plusAndStarOperatorHandlerCalledByToNDFA(ndfa, ndfaLeft, ref i);
                     break;
                 case Operator.STAR:
-                    ndfa = plusAndStarOperatorHandlerCalledByToNDFA(ndfa, ndfaLeft);
+                    ndfa = plusAndStarOperatorHandlerCalledByToNDFA(ndfa, ndfaLeft, ref i);
                     break;
                 default:
                     break;
@@ -180,10 +180,10 @@ namespace Automata
             return ndfa;
         }
 
-        private NDFA<string, char> plusAndStarOperatorHandlerCalledByToNDFA(NDFA<string, char> ndfa, NDFA<string, char> left)
+        private NDFA<int, char> plusAndStarOperatorHandlerCalledByToNDFA(NDFA<int, char> ndfa, NDFA<int, char> left, ref int i)
         {
-            var startState = Guid.NewGuid().ToString();
-            var endState = Guid.NewGuid().ToString();
+            var startState = ++i;
+            var endState = ++i;
             ndfa.addStartState(startState);
             ndfa.addEndState(endState);
             ndfa.addTransition(ndfa.Epsilon, startState, left.StartStates.First());

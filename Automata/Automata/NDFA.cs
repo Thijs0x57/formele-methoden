@@ -6,6 +6,7 @@ namespace Automata
 {
     class NDFA<T, U> : Automaton<T, U>
     {
+        // Dictionary<Fromstate, Dictionary<terminal, HashSet<toStates>>>
         public Dictionary<T, Dictionary<U, HashSet<T>>> Transitions { get; private set; } = new Dictionary<T, Dictionary<U, HashSet<T>>>();
         public HashSet<U> Alphabet { get; private set; } = new HashSet<U>();
         public HashSet<T> StartStates { get; private set; } = new HashSet<T>();

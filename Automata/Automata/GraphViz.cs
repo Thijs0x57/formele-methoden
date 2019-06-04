@@ -11,41 +11,92 @@ namespace Automata
 {
     class GraphViz
     {
-        public static void PrintGraph<T>(Automaat<T> data, string filename) where T : IComparable
+        public static void PrintNDFA<T, U>(NDFA<T, U> ndfa, string filename)
         {
             var s = "digraph{ ";
-            s += GetFinalStatesData(data);
-            s += GetStartStatesData(data);
+            s += GetFinalStatesData(ndfa.EndStates);
+            s += GetStartStatesData(ndfa.StartStates);
 
             s += "node [shape = circle];";
 
-            foreach (var t in data._transitions)
-            {
-                //s += " " + ("S" + t.FromState) + " -> " + ("S" + t.ToState) + " " + "[ label = " + "\"" + t.Symbol + "\"" + " ];";
-                if (t.Symbol.Equals('$'))
-                {
-                    s += $" S{t.FromState} -> S{t.ToState} [ label = \"{t.Symbol}\" ]; ";
-                }
-                else
-                {
-                    s += $" S{t.FromState} -> S{t.ToState} [ label = {t.Symbol} ]; ";
-                }
-
-            }
+            foreach (var transition in ndfa.Transitions)
+                foreach (var terminal in transition.Value.Keys)
+                    foreach (var toStateHashset in transition.Value.Values)
+                        foreach (var toState in toStateHashset)
+                        {
+                            if (terminal.Equals(ndfa.Epsilon))
+                            {
+                                // fromstate -> toState = terminal
+                                s += $" S{transition.Key} -> S{toState} [ label = \"{terminal}\" ]; ";
+                            }
+                            else
+                            {
+                                s += $" S{transition.Key} -> S{toState} [ label = {terminal} ]; ";
+                            }
+                        }
             s += " }";
 
-            //Console.WriteLine(s);
+            Console.WriteLine(s);
 
-            GenerateGraphFile(s, filename);
+            GenerateGraphFile(s, filename, Enums.GraphReturnType.Svg);
         }
 
-        private static string GetFinalStatesData<T>(Automaat<T> a) where T : IComparable
+        public static void PrintDFA<T, U>(DFA<T, U> dfa, string filename)
         {
-            if (a._finalStates.Count == 0) return "";
+            var s = "digraph{ ";
+            s += GetFinalStatesData(dfa.EndStates);
+            s += GetStartStatesData(new HashSet<T> { dfa.StartState });
+
+            s += "node [shape = circle];";
+
+            foreach (var transition in dfa.Transitions)
+                foreach (var terminal in transition.Value.Keys)
+                    foreach (var toState in transition.Value.Values)
+                    {
+                        s += $" S{transition.Key} -> S{toState} [ label = {terminal} ]; ";
+                    }
+            s += " }";
+
+            Console.WriteLine(s);
+
+            GenerateGraphFile(s, filename, Enums.GraphReturnType.Svg);
+        }
+
+        //public static void PrintGraph<T, U>(Automaton<T, U> automaton, string filename) where T : IComparable
+        //{
+        //    var s = "digraph{ ";
+        //    s += GetFinalStatesData(automaton);
+        //    s += GetStartStatesData(automaton);
+
+        //    s += "node [shape = circle];";
+
+        //    foreach (var t in automaton.Transitions)
+        //    {
+        //        //s += " " + ("S" + t.FromState) + " -> " + ("S" + t.ToState) + " " + "[ label = " + "\"" + t.Symbol + "\"" + " ];";
+        //        if (t.Symbol.Equals('$'))
+        //        {
+        //            s += $" S{t.FromState} -> S{t.ToState} [ label = \"{t.Symbol}\" ]; ";
+        //        }
+        //        else
+        //        {
+        //            s += $" S{t.FromState} -> S{t.ToState} [ label = {t.Symbol} ]; ";
+        //        }
+
+        //    }
+        //    s += " }";
+
+        //    Console.WriteLine(s);
+
+        //    GenerateGraphFile(s, filename);
+        //}
+
+        private static string GetFinalStatesData<T>(HashSet<T> endStates)//Automaton<T,U> a) where T : IComparable
+        {
+            if (endStates.Count == 0) return "";
 
             var s = "node [shape = doublecircle];";
 
-            foreach (var t in a._finalStates)
+            foreach (var t in endStates)
             {
                 s += " " + ("S" + t) + " ";
             }
@@ -54,15 +105,15 @@ namespace Automata
             return s;
         }
 
-        private static string GetStartStatesData<T>(Automaat<T> a) where T : IComparable
+        private static string GetStartStatesData<T>(HashSet<T> startStates)// where T : IComparable
         {
-            if (a._startStates.Count == 0) return "";
+            if (startStates.Count == 0) return "";
 
             var s = "node [shape=point]";
             s += "node0 [label=\"\"];";
 
             s += "node [shape = circle];";
-            foreach (var state in a._startStates)
+            foreach (var state in startStates)
             {
                 s += $" node0:\"\" -> S{state} ";
             }
@@ -70,20 +121,10 @@ namespace Automata
             return s;
         }
 
-        static void GenerateGraphFile(string data, string filename)
+        static void GenerateGraphFile(string data, string filename, Enums.GraphReturnType filetype)
         {
-            var getStartProcessQuery = new GetStartProcessQuery();
-            var getProcessStartInfoQuery = new GetProcessStartInfoQuery();
-            var registerLayoutPluginCommand =
-                new RegisterLayoutPluginCommand(getProcessStartInfoQuery, getStartProcessQuery);
-
-            var wrapper = new GraphGeneration(getStartProcessQuery,
-                getProcessStartInfoQuery,
-                registerLayoutPluginCommand);
-
-            byte[] output = wrapper.GenerateGraph(data, Enums.GraphReturnType.Jpg);
-            System.IO.File.WriteAllBytes(filename + ".jpg", output);
-            System.Diagnostics.Process.Start($"{filename}.jpg");
+            Console.WriteLine($"filetype: {filetype}");
+            System.IO.File.WriteAllText("./fsm.gv", data);
         }
     }
 }

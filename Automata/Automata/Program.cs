@@ -9,8 +9,9 @@ namespace Automata
         {
             TestDFA();
             TestNDFA();
-            TestRegExp();
-            testLanguage();
+            //TestRegExp();
+            //testLanguage();
+            testDFAnd();
         }
 
         public static void tester(String stringToTest, bool accepted)
@@ -94,6 +95,35 @@ namespace Automata
             tester(ndfaTest, ndfa.accept(ndfaTest.ToCharArray()));
         }
 
+        public static void testDFAnd()
+        {
+            Console.WriteLine("--------------DFA AND--------------");
+            DFA<int, char> dfa1 = new DFA<int, char>();
+            dfa1.addStartState(1);
+            dfa1.addEndState(5);
+            dfa1.addTransition('b', 1, 2);
+            dfa1.addTransition('a', 1, 1);
+            dfa1.addTransition('b', 2, 3);
+            dfa1.addTransition('a', 2, 1);
+            dfa1.addTransition('b', 3, 3);
+            dfa1.addTransition('a', 3, 4);
+            dfa1.addTransition('b', 4, 5);
+            dfa1.addTransition('a', 4, 1);
+            dfa1.addTransition('a', 5, 1);
+            dfa1.addTransition('b', 5, 3);
+
+            DFA<int, char> dfa2 = new DFA<int, char>();
+            dfa2.addStartState(1);
+            dfa2.addEndState(2);
+            dfa2.addTransition('a', 1, 1);
+            dfa2.addTransition('b', 1, 2);
+            dfa2.addTransition('a', 2, 2);
+            dfa2.addTransition('b', 2, 1);
+
+            var result = dfa1.and(dfa2);
+            GraphViz.PrintDFA(dfa1, "dfa");
+        }
+
         public static void TestRegExp()
         {
             a = new Regex("a");
@@ -114,9 +144,12 @@ namespace Automata
             // expr5: "(baa | baa)+ (a|b)*"
             expr5 = expr4.dot(all);
             // converting to NDFA
-            NDFA<string, char> ndfa = expr5.toNDFA();
+            int i = 0;
+            NDFA<int, char> ndfa = expr5.toNDFA(ref i);
             string ndfaTest = "baab";
             tester(ndfaTest, ndfa.accept(ndfaTest.ToCharArray()));
+            Console.WriteLine("-----NDFA Graph-----");
+            GraphViz.PrintNDFA(ndfa, "ndfa");
         }
 
         public static void testLanguage()
