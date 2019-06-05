@@ -121,7 +121,8 @@ namespace Automata
             dfa2.addTransition('b', 2, 1);
 
             var result = dfa1.and(dfa2);
-            GraphViz.PrintDFA(dfa1, "dfa");
+            //Console.WriteLine($"result: {result}\n");
+            GraphViz.PrintDFA(result, "dfa");
         }
 
         public static void TestRegExp()

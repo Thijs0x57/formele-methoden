@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Automata
@@ -32,10 +33,8 @@ namespace Automata
 
         public bool addStartState(T state)
         {
-            // Only add startstate when there are 0 startStates, otherwise return false.
-            return StartState == null
-                ? addStartState(state)
-                : false;
+            StartState = state;
+            return true;
         }
 
         public bool addEndState(T state)
@@ -77,32 +76,36 @@ namespace Automata
             return EndStates.Contains(currState);
         }
 
-        public DFA<T[], U> and(DFA<T, U> other)
+        public DFA<string, U> and(DFA<T, U> other)
         {
-            if (Alphabet != other.Alphabet)
+            if (!Alphabet.SetEquals(other.Alphabet))
                 return null;
-            var curr = new T[] { StartState, other.StartState };
-            var result = new DFA<T[], U>();
-            result.addStartState(curr);
+            var curr = new Dictionary<U, T[]>();
+            foreach (var terminal in Alphabet)
+            {
+                curr.Add(terminal, new T[] { StartState, other.StartState });
+            }
+            var result = new DFA<string, U>();
+            result.addStartState(string.Join(",", curr.First().Value));
             while (result.Transitions.Count() < Transitions.Count * other.Transitions.Count())
             {
                 foreach (var terminal in Alphabet)
                 {
                     var next = new T[2];
-                    if (Transitions.ContainsKey(curr[0]))
+                    if (Transitions.ContainsKey(curr[terminal][0]))
                     {
-                        next[0] = Transitions[curr[0]][terminal];
+                        next[0] = Transitions[curr[terminal][0]][terminal];
                     }
-                    if (other.Transitions.ContainsKey(curr[1]))
+                    if (other.Transitions.ContainsKey(curr[terminal][1]))
                     {
-                        next[1] = other.Transitions[curr[1]][terminal];
+                        next[1] = other.Transitions[curr[terminal][1]][terminal];
                     }
-                    if (EndStates.Contains(curr[0]) && other.EndStates.Contains(curr[1]))
+                    if (EndStates.Contains(curr[terminal][0]) && other.EndStates.Contains(curr[terminal][1]))
                     {
-                        result.addEndState(curr);
+                        result.addEndState(string.Join(",", curr[terminal]));
                     }
-                    result.addTransition(terminal, curr, next);
-                    curr = next;
+                    result.addTransition(terminal, string.Join(",", curr[terminal]), string.Join(",", next));
+                    curr[terminal] = next;
                 }
             }
             return result;
