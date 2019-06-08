@@ -106,7 +106,8 @@ namespace Automata
                 var next = new HashSet<Tuple<T, T>>(Transitions.Count * other.Transitions.Count());
                 foreach (var currState in curr)
                 {
-                    if (and ? (EndStates.Contains(currState.Item1) && other.EndStates.Contains(currState.Item2)) : (EndStates.Contains(currState.Item1) || other.EndStates.Contains(currState.Item2)))
+                    if (and ? (EndStates.Contains(currState.Item1) && other.EndStates.Contains(currState.Item2)) 
+                        : (EndStates.Contains(currState.Item1) || other.EndStates.Contains(currState.Item2)))
                     {
                         result.addEndState(currState);
                     }
@@ -136,15 +137,21 @@ namespace Automata
             return result;
         }
 
-        public DFA<T, U> reverse()
+        public NDFA<T, U> reverse(U epsilon)
         {
-            DFA<T, U> result = new DFA<T, U>();
 
-
+            NDFA<T, U> result = new NDFA<T, U>(epsilon);
+            // Add DFA's startstate as endstate
+            result.addEndState(StartState);
+            EndStates.ToList().ForEach(state => result.addStartState(state));
+            Transitions.ToList().ForEach(transition 
+                => forEachTransition((terminal, fromState, toState) 
+                => result.addTransition(terminal, fromState, toState)));
             return result;
         }
+       
 
-            public void forEachTransition(Action<U, T, T> action)
+        public void forEachTransition(Action<U, T, T> action)
         {
             foreach (KeyValuePair<T, Dictionary<U, T>> transition in Transitions)
             {

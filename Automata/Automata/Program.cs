@@ -5,6 +5,10 @@ namespace Automata
     class Program
     {
         private static Regex expr1, expr2, expr3, expr4, expr5, a, b, all;
+        private static DFA<int, char> dfa = new DFA<int, char>();
+        private static NDFA<int, char> ndfa = new NDFA<int, char>('$');
+        private static DFA<int, char> dfa1 = new DFA<int, char>();
+        private static DFA<int, char> dfa2 = new DFA<int, char>();
 
         /* TODO
          * - NDFA -> DFA function
@@ -17,11 +21,20 @@ namespace Automata
          */
         static void Main(string[] args)
         {
-            //TestDFA();
-            //TestNDFA();
-            //TestRegExp();
-            //testLanguage();
+            
+            init();
+
+            // Normal DFA & NDFA
+            TestDFA();
+            TestNDFA();
+
+            // Regex & toNDFA
+            TestRegExp();
+            testLanguage();
+
+            // DFA Operation: and, or & negative
             testDfaOperation();
+            testReverseDFA();
         }
 
         public static void tester(String stringToTest, bool accepted)
@@ -33,37 +46,9 @@ namespace Automata
 
         public static void TestDFA()
         {
-            /**
-             *  bevat een even aantal b’s of bevat een oneven aantal a’s
-             *  bevat een even aantal b’s en eindigt op aab
-             *  begint met abb en bevat baab
-             */
+            Console.WriteLine("--------------DFA--------------\nBegint met abb of eindigt op baab\n--------------DFA--------------");
             // Begint met abb of eindigt op baab
-            Console.WriteLine("--------------DFA--------------");
-            Automaton<int, char> dfa = new DFA<int, char>();
-            dfa.addStartState(0);
-            dfa.addEndState(3);
-            dfa.addEndState(8);
-            dfa.addTransition('a', 0, 1);
-            dfa.addTransition('b', 0, 4);
-            dfa.addTransition('a', 1, 4);
-            dfa.addTransition('b', 1, 2);
-            dfa.addTransition('a', 2, 4);
-            dfa.addTransition('b', 2, 3);
-            dfa.addTransition('a', 3, 3);
-            dfa.addTransition('b', 3, 3);
-            dfa.addTransition('a', 4, 4);
-            dfa.addTransition('b', 4, 5);
-            dfa.addTransition('a', 5, 6);
-            dfa.addTransition('b', 5, 5);
-            dfa.addTransition('a', 6, 7);
-            dfa.addTransition('b', 6, 5);
-            dfa.addTransition('a', 7, 4);
-            dfa.addTransition('b', 7, 8);
-            dfa.addTransition('a', 8, 6);
-            dfa.addTransition('b', 8, 5);
-            // Begint met abb of eindigt op baab
-            String test = "abbabaab";
+            string test = "abbabaab";
             tester(test, dfa.accept(test.ToCharArray()));
             test = "abbaaaaaa";
             tester(test, dfa.accept(test.ToCharArray()));
@@ -75,29 +60,12 @@ namespace Automata
             tester(test, dfa.accept(test.ToCharArray()));
             test = "aaaaaaabbbbbb";
             tester(test, dfa.accept(test.ToCharArray()));
+            GraphViz.PrintDFA(dfa, "dfa");
         }
 
         public static void TestNDFA()
         {
-            Console.WriteLine("--------------NDFA--------------");
-            NDFA<int, char> ndfa = new NDFA<int, char>('$');
-            ndfa.addStartState(1);
-            ndfa.addEndState(9);
-            ndfa.addTransition('a', 1, 1);
-            ndfa.addTransition('b', 1, 1);
-            ndfa.addTransition('$', 1, 2);
-            ndfa.addTransition('$', 1, 9);
-            ndfa.addTransition('$', 2, 4);
-            ndfa.addTransition('$', 2, 6);
-            ndfa.addTransition('a', 4, 5);
-            ndfa.addTransition('$', 5, 3);
-            ndfa.addTransition('$', 2, 6);
-            ndfa.addTransition('b', 6, 7);
-            ndfa.addTransition('c', 7, 8);
-            ndfa.addTransition('$', 8, 9);
-            ndfa.addTransition('$', 3, 2);
-            ndfa.addTransition('$', 3, 9);
-            ndfa.addTransition('$', 1, 9);
+            Console.WriteLine("--------------NDFA--------------\nEnds with a, or bc\n--------------NDFA--------------");
             // Ends with a, or bc
             string ndfaTest = "acb";
             tester(ndfaTest, ndfa.accept(ndfaTest.ToCharArray()));
@@ -108,35 +76,14 @@ namespace Automata
 
         public static void testDfaOperation()
         {
-            Console.WriteLine("--------------DFA AND--------------");
-            DFA<int, char> dfa1 = new DFA<int, char>();
-            dfa1.addStartState(1);
-            dfa1.addEndState(5);
-            dfa1.addTransition('b', 1, 2);
-            dfa1.addTransition('a', 1, 1);
-            dfa1.addTransition('b', 2, 3);
-            dfa1.addTransition('a', 2, 1);
-            dfa1.addTransition('b', 3, 3);
-            dfa1.addTransition('a', 3, 4);
-            dfa1.addTransition('b', 4, 5);
-            dfa1.addTransition('a', 4, 1);
-            dfa1.addTransition('a', 5, 1);
-            dfa1.addTransition('b', 5, 3);
+            Console.WriteLine("--------------DFA AND--------------\nMerging 2 DFA's\n--------------DFA AND--------------");
+            GraphViz.PrintDFA(dfa1.and(dfa2), "dfa-and");
 
-            DFA<int, char> dfa2 = new DFA<int, char>();
-            dfa2.addStartState(1);
-            dfa2.addEndState(1);
-            dfa2.addTransition('a', 1, 1);
-            dfa2.addTransition('b', 1, 2);
-            dfa2.addTransition('a', 2, 2);
-            dfa2.addTransition('b', 2, 1);
+            Console.WriteLine("--------------DFA OR-------------\nMerging 2 DFA's\n--------------DFA OR--------------");
+            GraphViz.PrintDFA(dfa1.or(dfa2), "dfa-or");
 
-            //var result = dfa1.and(dfa2);
-            //Console.WriteLine($"result: {result}\n");
-            //GraphViz.PrintDFA(result, "dfa");
-
-            Console.WriteLine("--------------OR DFA-------------");
-            GraphViz.PrintDFA(dfa1.or(dfa2), "dfa");
+            Console.WriteLine("--------------DFA NEGATIVE-------------\nNegative of a DFA\n--------------DFA NEGATIVE--------------");
+            GraphViz.PrintDFA(dfa1.negative(), "dfa-negative");
         }
 
         public static void TestRegExp()
@@ -177,6 +124,78 @@ namespace Automata
             Console.WriteLine("4. taal van (a|b)*:\n" + string.Join(" ", all.getLanguageUntilLength(3)));
             Console.WriteLine("5. taal van (baa | bb)+:\n" + string.Join(" ", expr4.getLanguageUntilLength(4)));
             Console.WriteLine("6. taal van (baa | bb)+ (a|b)*:\n" + string.Join(" ", expr5.getLanguageUntilLength(4)));
+            Console.WriteLine();
+        }
+
+        public static void testReverseDFA()
+        {
+            Console.WriteLine("--------------DFA REVERSE--------------\nReversing a DFA\n--------------DFA REVERSE--------------");
+            GraphViz.PrintNDFA(dfa.reverse('$'), "dfa-reverse");
+        }
+
+        public static void init()
+        {
+            // Begint met abb of eindigt op baab
+            dfa.addStartState(0);
+            dfa.addEndState(3);
+            dfa.addEndState(8);
+            dfa.addTransition('a', 0, 1);
+            dfa.addTransition('b', 0, 4);
+            dfa.addTransition('a', 1, 4);
+            dfa.addTransition('b', 1, 2);
+            dfa.addTransition('a', 2, 4);
+            dfa.addTransition('b', 2, 3);
+            dfa.addTransition('a', 3, 3);
+            dfa.addTransition('b', 3, 3);
+            dfa.addTransition('a', 4, 4);
+            dfa.addTransition('b', 4, 5);
+            dfa.addTransition('a', 5, 6);
+            dfa.addTransition('b', 5, 5);
+            dfa.addTransition('a', 6, 7);
+            dfa.addTransition('b', 6, 5);
+            dfa.addTransition('a', 7, 4);
+            dfa.addTransition('b', 7, 8);
+            dfa.addTransition('a', 8, 6);
+            dfa.addTransition('b', 8, 5);
+
+            // Ends with a, or bc
+            ndfa.addStartState(1);
+            ndfa.addEndState(9);
+            ndfa.addTransition('a', 1, 1);
+            ndfa.addTransition('b', 1, 1);
+            ndfa.addTransition('$', 1, 2);
+            ndfa.addTransition('$', 1, 9);
+            ndfa.addTransition('$', 2, 4);
+            ndfa.addTransition('$', 2, 6);
+            ndfa.addTransition('a', 4, 5);
+            ndfa.addTransition('$', 5, 3);
+            ndfa.addTransition('$', 2, 6);
+            ndfa.addTransition('b', 6, 7);
+            ndfa.addTransition('c', 7, 8);
+            ndfa.addTransition('$', 8, 9);
+            ndfa.addTransition('$', 3, 2);
+            ndfa.addTransition('$', 3, 9);
+            ndfa.addTransition('$', 1, 9);
+
+            dfa1.addStartState(1);
+            dfa1.addEndState(5);
+            dfa1.addTransition('b', 1, 2);
+            dfa1.addTransition('a', 1, 1);
+            dfa1.addTransition('b', 2, 3);
+            dfa1.addTransition('a', 2, 1);
+            dfa1.addTransition('b', 3, 3);
+            dfa1.addTransition('a', 3, 4);
+            dfa1.addTransition('b', 4, 5);
+            dfa1.addTransition('a', 4, 1);
+            dfa1.addTransition('a', 5, 1);
+            dfa1.addTransition('b', 5, 3);
+
+            dfa2.addStartState(1);
+            dfa2.addEndState(1);
+            dfa2.addTransition('a', 1, 1);
+            dfa2.addTransition('b', 1, 2);
+            dfa2.addTransition('a', 2, 2);
+            dfa2.addTransition('b', 2, 1);
         }
     }
 }
