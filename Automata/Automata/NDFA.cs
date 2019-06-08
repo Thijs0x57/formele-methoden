@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -116,6 +117,20 @@ namespace Automata
             }
 
             return EndStates.Intersect(currStates).Count() > 0;
+        }
+
+        public void forEachTransition(Action<U, T, T> action)
+        {
+            foreach (var transition in Transitions)
+            {
+                foreach (var terminalTo in transition.Value)
+                {
+                    foreach (var toState in terminalTo.Value)
+                    {
+                        action(terminalTo.Key, transition.Key, toState);
+                    }
+                }
+            }
         }
     }
 }

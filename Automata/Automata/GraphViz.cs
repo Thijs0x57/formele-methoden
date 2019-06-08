@@ -18,22 +18,7 @@ namespace Automata
             s += GetStartStatesData(ndfa.StartStates);
 
             s += "node [shape = circle];";
-
-            foreach (var transition in ndfa.Transitions)
-                foreach (var terminal in transition.Value.Keys)
-                    foreach (var toStateHashset in transition.Value.Values)
-                        foreach (var toState in toStateHashset)
-                        {
-                            if (terminal.Equals(ndfa.Epsilon))
-                            {
-                                // fromstate -> toState = terminal
-                                s += $" S{transition.Key} -> S{toState} [ label = \"{terminal}\" ]; ";
-                            }
-                            else
-                            {
-                                s += $" S{transition.Key} -> S{toState} [ label = {terminal} ]; ";
-                            }
-                        }
+            ndfa.forEachTransition((terminal, fromState, toState) => s += TransitionToString(terminal, fromState, toState));
             s += " }";
 
             Console.WriteLine(s);
@@ -48,13 +33,7 @@ namespace Automata
             s += GetStartStatesData(new HashSet<T> { dfa.StartState });
 
             s += "node [shape = circle];";
-
-            foreach (var transition in dfa.Transitions)
-                foreach (var terminal in transition.Value.Keys)
-                    foreach (var toState in transition.Value.Values)
-                    {
-                        s += $" S{transition.Key} -> S{toState} [ label = {terminal} ]; ";
-                    }
+            dfa.forEachTransition((terminal, fromState, toState) => s += TransitionToString(terminal, fromState, toState));
             s += " }";
 
             Console.WriteLine(s);
@@ -62,33 +41,10 @@ namespace Automata
             GenerateGraphFile(s, filename, Enums.GraphReturnType.Svg);
         }
 
-        //public static void PrintGraph<T, U>(Automaton<T, U> automaton, string filename) where T : IComparable
-        //{
-        //    var s = "digraph{ ";
-        //    s += GetFinalStatesData(automaton);
-        //    s += GetStartStatesData(automaton);
-
-        //    s += "node [shape = circle];";
-
-        //    foreach (var t in automaton.Transitions)
-        //    {
-        //        //s += " " + ("S" + t.FromState) + " -> " + ("S" + t.ToState) + " " + "[ label = " + "\"" + t.Symbol + "\"" + " ];";
-        //        if (t.Symbol.Equals('$'))
-        //        {
-        //            s += $" S{t.FromState} -> S{t.ToState} [ label = \"{t.Symbol}\" ]; ";
-        //        }
-        //        else
-        //        {
-        //            s += $" S{t.FromState} -> S{t.ToState} [ label = {t.Symbol} ]; ";
-        //        }
-
-        //    }
-        //    s += " }";
-
-        //    Console.WriteLine(s);
-
-        //    GenerateGraphFile(s, filename);
-        //}
+        private static string TransitionToString<T, U>(U terminal, T fromState, T toState)
+        {
+                return $" \"S{stateToString(fromState)}\" -> \"S{stateToString(toState)}\" [ label = \"{terminal}\" ]; ";
+        }
 
         private static string GetFinalStatesData<T>(HashSet<T> endStates)//Automaton<T,U> a) where T : IComparable
         {
@@ -96,9 +52,9 @@ namespace Automata
 
             var s = "node [shape = doublecircle];";
 
-            foreach (var t in endStates)
+            foreach (var name in endStates)
             {
-                s += " " + ("S" + t) + " ";
+                s += " " + ("\"S" + stateToString(name)) + "\" ";
             }
             s += ";  ";
 
@@ -115,7 +71,7 @@ namespace Automata
             s += "node [shape = circle];";
             foreach (var state in startStates)
             {
-                s += $" node0:\"\" -> S{state} ";
+                s += $" node0:\"\" -> \"S{stateToString(state)}\" ";
             }
 
             return s;
@@ -125,6 +81,18 @@ namespace Automata
         {
             Console.WriteLine($"filetype: {filetype}");
             System.IO.File.WriteAllText("./fsm.gv", data);
+        }
+
+        private static string stateToString<T>(T state)
+        {
+            if (typeof(IEnumerable<T>).IsAssignableFrom(typeof(T)))
+            {
+                return string.Join(",", state);
+            }
+            else
+            {
+                return state.ToString();
+            }
         }
     }
 }

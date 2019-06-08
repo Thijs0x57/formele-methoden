@@ -6,10 +6,12 @@ namespace Automata
 {
     class DFA<T, U> : Automaton<T, U>
     {
+        // Dictionary<Fromstate, Dictionary<terminal, toStates>>
         public Dictionary<T, Dictionary<U, T>> Transitions { get; protected set; } = new Dictionary<T, Dictionary<U, T>>();
         public HashSet<U> Alphabet { get; protected set; } = new HashSet<U>();
         public T StartState { get; protected set; }
         public HashSet<T> EndStates { get; protected set; } = new HashSet<T>();
+        public HashSet<T> states { get; protected set; } = new HashSet<T>();
 
         public virtual bool addTransition(U input, T fromState, T toState)
         {
@@ -28,19 +30,24 @@ namespace Automata
             // Add input to alphabet so the alphabet can dynamically be changed
             Alphabet.Add(input);
             Transitions[fromState].Add(input, toState);
+            states.Add(fromState);
+            states.Add(toState);
             return true;
         }
 
         public bool addStartState(T state)
         {
             StartState = state;
+            states.Add(state);
             return true;
         }
 
         public bool addEndState(T state)
         {
+            states.Add(state);
             return EndStates.Add(state);
         }
+
         public bool isValid()
         {
             if (StartState == null || EndStates.Count == 0)
@@ -76,44 +83,43 @@ namespace Automata
             return EndStates.Contains(currState);
         }
 
-        public DFA<string, U> and(DFA<T, U> other)
+        public DFA<Tuple<T, T>, U> and(DFA<T, U> other)
+        {
+            return andor(other, true);
+        }
+
+        public DFA<Tuple<T, T>, U> or(DFA<T, U> other)
+        {
+            return andor(other, false);
+        }
+
+        private DFA<Tuple<T, T>, U> andor(DFA<T, U> other, bool and)
         {
             if (!Alphabet.SetEquals(other.Alphabet))
                 return null;
-            var curr = new Dictionary<U, T[]>();
-            foreach (var terminal in Alphabet)
-            {
-                curr.Add(terminal, new T[] { StartState, other.StartState });
-            }
-            var result = new DFA<string, U>();
-            result.addStartState(string.Join(",", curr.First().Value));
+            var curr = new HashSet<Tuple<T, T>>(Transitions.Count * other.Transitions.Count());
+            curr.Add(Tuple.Create(StartState, other.StartState));
+            var result = new DFA<Tuple<T, T>, U>();
+            result.addStartState(curr.First());
             while (result.Transitions.Count() < Transitions.Count * other.Transitions.Count())
             {
-                foreach (var terminal in Alphabet)
+                var next = new HashSet<Tuple<T, T>>(Transitions.Count * other.Transitions.Count());
+                foreach (var currState in curr)
                 {
-                    var next = new T[2];
-                    if (Transitions.ContainsKey(curr[terminal][0]))
+                    if (and ? (EndStates.Contains(currState.Item1) && other.EndStates.Contains(currState.Item2)) : (EndStates.Contains(currState.Item1) || other.EndStates.Contains(currState.Item2)))
                     {
-                        next[0] = Transitions[curr[terminal][0]][terminal];
+                        result.addEndState(currState);
                     }
-                    if (other.Transitions.ContainsKey(curr[terminal][1]))
+                    foreach (var terminal in Alphabet)
                     {
-                        next[1] = other.Transitions[curr[terminal][1]][terminal];
+                        var nextState = Tuple.Create(Transitions[currState.Item1][terminal], other.Transitions[currState.Item2][terminal]);
+                        next.Add(nextState);
+                        result.addTransition(terminal, currState, nextState);
                     }
-                    if (EndStates.Contains(curr[terminal][0]) && other.EndStates.Contains(curr[terminal][1]))
-                    {
-                        result.addEndState(string.Join(",", curr[terminal]));
-                    }
-                    result.addTransition(terminal, string.Join(",", curr[terminal]), string.Join(",", next));
-                    curr[terminal] = next;
                 }
+                curr = next;
             }
             return result;
-        }
-
-        public DFA<T, U> or(DFA<T, U> other)
-        {
-            return null;
         }
 
         public DFA<T, U> negative()
@@ -121,9 +127,34 @@ namespace Automata
             DFA<T, U> result = new DFA<T, U>();
             result.addStartState(StartState);
             result.Transitions = Transitions;
-
-
-            return null;
+            result.states = states;
+            foreach (var state in states)
+            {
+                if (!EndStates.Contains(state))
+                    result.addEndState(state);
+            }
+            return result;
         }
+
+        public DFA<T, U> reverse()
+        {
+            DFA<T, U> result = new DFA<T, U>();
+
+
+            return result;
+        }
+
+            public void forEachTransition(Action<U, T, T> action)
+        {
+            foreach (KeyValuePair<T, Dictionary<U, T>> transition in Transitions)
+            {
+                foreach (KeyValuePair<U, T> terminalTo in transition.Value)
+                {
+                    action(terminalTo.Key, transition.Key, terminalTo.Value);
+                }
+            }
+        }
+
+
     }
 }

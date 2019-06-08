@@ -5,13 +5,23 @@ namespace Automata
     class Program
     {
         private static Regex expr1, expr2, expr3, expr4, expr5, a, b, all;
+
+        /* TODO
+         * - NDFA -> DFA function
+         * - DFA reverse function
+         * - minimaal één minimalisatie algoritme
+         * - gelijkheid op reguliere expressies / (NDFA)
+         * - epsilon closure?
+         * 
+         * 
+         */
         static void Main(string[] args)
         {
-            TestDFA();
-            TestNDFA();
+            //TestDFA();
+            //TestNDFA();
             //TestRegExp();
             //testLanguage();
-            testDFAnd();
+            testDfaOperation();
         }
 
         public static void tester(String stringToTest, bool accepted)
@@ -70,7 +80,7 @@ namespace Automata
         public static void TestNDFA()
         {
             Console.WriteLine("--------------NDFA--------------");
-            Automaton<int, char> ndfa = new NDFA<int, char>('$');
+            NDFA<int, char> ndfa = new NDFA<int, char>('$');
             ndfa.addStartState(1);
             ndfa.addEndState(9);
             ndfa.addTransition('a', 1, 1);
@@ -93,9 +103,10 @@ namespace Automata
             tester(ndfaTest, ndfa.accept(ndfaTest.ToCharArray()));
             ndfaTest = "bbabaabbbca";
             tester(ndfaTest, ndfa.accept(ndfaTest.ToCharArray()));
+            GraphViz.PrintNDFA(ndfa, "ndfa");
         }
 
-        public static void testDFAnd()
+        public static void testDfaOperation()
         {
             Console.WriteLine("--------------DFA AND--------------");
             DFA<int, char> dfa1 = new DFA<int, char>();
@@ -114,15 +125,18 @@ namespace Automata
 
             DFA<int, char> dfa2 = new DFA<int, char>();
             dfa2.addStartState(1);
-            dfa2.addEndState(2);
+            dfa2.addEndState(1);
             dfa2.addTransition('a', 1, 1);
             dfa2.addTransition('b', 1, 2);
             dfa2.addTransition('a', 2, 2);
             dfa2.addTransition('b', 2, 1);
 
-            var result = dfa1.and(dfa2);
+            //var result = dfa1.and(dfa2);
             //Console.WriteLine($"result: {result}\n");
-            GraphViz.PrintDFA(result, "dfa");
+            //GraphViz.PrintDFA(result, "dfa");
+
+            Console.WriteLine("--------------OR DFA-------------");
+            GraphViz.PrintDFA(dfa1.or(dfa2), "dfa");
         }
 
         public static void TestRegExp()

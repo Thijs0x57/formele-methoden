@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Automata
 {
@@ -19,5 +20,6 @@ namespace Automata
 
         bool accept(U[] input);
 
+        void forEachTransition(Action<U, T, T> action);
     }
 }
