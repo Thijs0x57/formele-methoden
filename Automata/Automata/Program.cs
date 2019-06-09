@@ -12,7 +12,6 @@ namespace Automata
         private static DFA<int, char> dfa2 = new DFA<int, char>();
 
         /* TODO
-         * - NDFA -> DFA function
          * - minimaal één minimalisatie algoritme
          * - gelijkheid op reguliere expressies / (NDFA)
          */

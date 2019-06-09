@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Automata
 {
-    class EqualSet<T> : HashSet<T>
+    class StateSet<T> : SortedSet<T>
     {
         public override bool Equals(object obj)
         {

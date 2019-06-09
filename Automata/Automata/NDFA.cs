@@ -133,13 +133,13 @@ namespace Automata
             }
         }
 
-        public DFA<HashSet<T>, U> toDFA()
+        public DFA<IEnumerable<T>, U> toDFA()
         {
-            DFA<HashSet<T>, U> result = new DFA<HashSet<T>, U>();
-            HashSet<EqualSet<T>> curr = new HashSet<EqualSet<T>>();
+            DFA<IEnumerable<T>, U> result = new DFA<IEnumerable<T>, U>();
+            HashSet<StateSet<T>> curr = new HashSet<StateSet<T>>();
 
             // Add start state
-            EqualSet<T> start = new EqualSet<T>();
+            StateSet<T> start = new StateSet<T>();
             foreach (T startState in StartStates)
             {
                 start.UnionWith(epsilonClosure(startState));
@@ -148,7 +148,7 @@ namespace Automata
             result.addStartState(start);
 
             // Add trap state
-            HashSet<T> trap = new EqualSet<T>();
+            StateSet<T> trap = new StateSet<T>();
             foreach (U terminal in Alphabet)
             {
                 result.addTransition(terminal, trap, trap);
@@ -159,15 +159,15 @@ namespace Automata
             while (!done)
             {
                 bool addedNew = false;
-                HashSet<EqualSet<T>> next = new HashSet<EqualSet<T>>();
+                HashSet<StateSet<T>> next = new HashSet<StateSet<T>>();
                 // For each current state in set of current states.
-                foreach (EqualSet<T> currState in curr)
+                foreach (StateSet<T> currState in curr)
                 {
                     // For each terminal in the alphabet.
                     foreach (U terminal in Alphabet)
                     {
                         // nextState will become the actual dfa to state.
-                        EqualSet<T> nextState = new EqualSet<T>();
+                        StateSet<T> nextState = new StateSet<T>();
                         // For each ndfa state of which the dfa state is made.
                         foreach (T subState in currState)
                         {

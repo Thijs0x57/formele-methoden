@@ -49,7 +49,7 @@
     <Compile Include="Automaton.cs" />
     <Compile Include="AutomatonInvalidException.cs" />
     <Compile Include="DFA.cs" />
-    <Compile Include="EqualSet.cs" />
+    <Compile Include="StateSet.cs" />
     <Compile Include="GraphViz.cs" />
     <Compile Include="NDFA.cs" />
     <Compile Include="Program.cs" />

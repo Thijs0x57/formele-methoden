@@ -47,6 +47,19 @@ namespace Automata
                 return $" \"S{stateToString(fromState)}\" -> \"S{stateToString(toState)}\" [ label = \"{terminal}\" ]; ";
         }
 
+        private static string stateToString<T>(T state)
+        {
+            if (state is IEnumerable || typeof(T).GetInterfaces().Where(i => i.IsGenericType).Any(i => i.GetGenericTypeDefinition() == typeof(IEnumerable<>)))
+            {
+                IEnumerable enumState = (IEnumerable)state;
+                return '{' + string.Join(",", enumState.Cast<object>()) + '}';
+            }
+            else
+            {
+                return state.ToString();
+            }
+        }
+
         private static string GetFinalStatesData<T>(HashSet<T> endStates)//Automaton<T,U> a) where T : IComparable
         {
             if (endStates.Count == 0) return "";
@@ -82,19 +95,6 @@ namespace Automata
         {
             Console.WriteLine($"filetype: {filetype}\n");
             System.IO.File.WriteAllText("./fsm.gv", data);
-        }
-
-        private static string stateToString<T>(T state)
-        {
-            if (typeof(T).GetInterfaces().Where(i => i.IsGenericType).Any(i => i.GetGenericTypeDefinition() == typeof(IEnumerable<>)))
-            {
-                IEnumerable enumState = (IEnumerable) state;
-                return '{' + string.Join(",", enumState.Cast<object>()) + '}';
-            }
-            else
-            {
-                return state.ToString();
-            }
         }
     }
 }
