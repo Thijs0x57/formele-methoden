@@ -13,7 +13,7 @@ namespace Automata
         public HashSet<T> EndStates { get; protected set; } = new HashSet<T>();
         public HashSet<T> states { get; protected set; } = new HashSet<T>();
 
-        public virtual bool addTransition(U input, T fromState, T toState)
+        public bool addTransition(U input, T fromState, T toState)
         {
             // Check if state and input already exists
             if (!Transitions.ContainsKey(fromState))
@@ -139,14 +139,16 @@ namespace Automata
 
         public NDFA<T, U> reverse(U epsilon)
         {
-
             NDFA<T, U> result = new NDFA<T, U>(epsilon);
             // Add DFA's startstate as endstate
             result.addEndState(StartState);
-            EndStates.ToList().ForEach(state => result.addStartState(state));
-            Transitions.ToList().ForEach(transition 
-                => forEachTransition((terminal, fromState, toState) 
-                => result.addTransition(terminal, fromState, toState)));
+            foreach (T endState in EndStates)
+            {
+                result.addStartState(endState);
+            }
+
+            forEachTransition((terminal, fromState, toState) 
+                => result.addTransition(terminal, fromState, toState));
             return result;
         }
        

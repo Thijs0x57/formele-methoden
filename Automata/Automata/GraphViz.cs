@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -85,9 +86,10 @@ namespace Automata
 
         private static string stateToString<T>(T state)
         {
-            if (typeof(IEnumerable<T>).IsAssignableFrom(typeof(T)))
+            if (typeof(T).GetInterfaces().Where(i => i.IsGenericType).Any(i => i.GetGenericTypeDefinition() == typeof(IEnumerable<>)))
             {
-                return string.Join(",", state);
+                IEnumerable enumState = (IEnumerable) state;
+                return '{' + string.Join(",", enumState.Cast<object>()) + '}';
             }
             else
             {

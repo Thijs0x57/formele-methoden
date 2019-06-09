@@ -132,5 +132,141 @@ namespace Automata
                 }
             }
         }
+
+        public DFA<HashSet<T>, U> toDFA()
+        {
+            DFA<HashSet<T>, U> result = new DFA<HashSet<T>, U>();
+            HashSet<EqualSet<T>> curr = new HashSet<EqualSet<T>>();
+
+            // Add start state
+            EqualSet<T> start = new EqualSet<T>();
+            foreach (T startState in StartStates)
+            {
+                start.UnionWith(epsilonClosure(startState));
+            }
+            curr.Add(start);
+            result.addStartState(start);
+
+            // Add trap state
+            HashSet<T> trap = new EqualSet<T>();
+            foreach (U terminal in Alphabet)
+            {
+                result.addTransition(terminal, trap, trap);
+            }
+
+            // Add transitions
+            bool done = false;
+            while (!done)
+            {
+                bool addedNew = false;
+                HashSet<EqualSet<T>> next = new HashSet<EqualSet<T>>();
+                // For each current state in set of current states.
+                foreach (EqualSet<T> currState in curr)
+                {
+                    // For each terminal in the alphabet.
+                    foreach (U terminal in Alphabet)
+                    {
+                        // nextState will become the actual dfa to state.
+                        EqualSet<T> nextState = new EqualSet<T>();
+                        // For each ndfa state of which the dfa state is made.
+                        foreach (T subState in currState)
+                        {
+                            // Get the epsilon closure of the sub state.
+                            HashSet<T> preClosure = epsilonClosure(subState);
+                            // For each state in the epsilon closure.
+                            foreach (T preClosureState in preClosure)
+                            {
+                                if (!Transitions.ContainsKey(preClosureState) || !Transitions[preClosureState].ContainsKey(terminal))
+                                {
+                                    continue;
+                                }
+                                // Get all the to states for this terminal.
+                                HashSet<T> follow = Transitions[preClosureState][terminal];
+                                // Accumulate the epsilon closure of each followed state.
+                                foreach (T followedState in follow)
+                                {
+                                    HashSet<T> postClosure = epsilonClosure(followedState);
+                                    nextState.UnionWith(postClosure);
+                                }
+
+                                next.Add(nextState);
+                            }
+                        }
+
+                        if (nextState.Count() > 0)
+                        {
+                            // Add transition.
+                            if (result.addTransition(terminal, currState, nextState))
+                            {
+                                addedNew = true;
+                            }
+                            // Add end state
+                            if (EndStates.Intersect(nextState).Count() > 0)
+                            {
+                                result.addEndState(nextState);
+                            }
+                        }
+                        else
+                        {
+                            /*
+. . . . . . . . . . . . . . . . _,,,--~~~~~~~~--,_
+. . . . . . . . . . . . . . ,-' : : : :::: :::: :: : : : : :º '-, ITS A TRAP!
+. . . . . . . . . . . . .,-' :: : : :::: :::: :::: :::: : : :o : '-,
+. . . . . . . . . . . ,-' :: ::: :: : : :: :::: :::: :: : : : : :O '-,
+. . . . . . . . . .,-' : :: :: :: :: :: : : : : : , : : :º :::: :::: ::';
+. . . . . . . . .,-' / / : :: :: :: :: : : :::: :::-, ;; ;; ;; ;; ;; ;; ;\
+. . . . . . . . /,-',' :: : : : : : : : : :: :: :: : '-, ;; ;; ;; ;; ;; ;;|
+. . . . . . . /,',-' :: :: :: :: :: :: :: : ::_,-~~,_'-, ;; ;; ;; ;; |
+. . . . . _/ :,' :/ :: :: :: : : :: :: _,-'/ : ,-';'-'''''~-, ;; ;; ;;,'
+. . . ,-' / : : : : : : ,-''' : : :,--'' :|| /,-'-'--'''__,''' \ ;; ;,-'/
+. . . \ :/,, : : : _,-' --,,_ : : \ :\ ||/ /,-'-'x### ::\ \ ;;/
+. . . . \/ /---'''' : \ #\ : :\ : : \ :\ \| | : (O##º : :/ /-''
+. . . . /,'____ : :\ '-#\ : \, : :\ :\ \ \ : '-,___,-',-`-,,
+. . . . ' ) : : : :''''--,,--,,,,,,¯ \ \ :: ::--,,_''-,,'''¯ :'- :'-,
+. . . . .) : : : : : : ,, : ''''~~~~' \ :: :: :: :'''''¯ :: ,-' :,/\
+. . . . .\,/ /|\\| | :/ / : : : : : : : ,'-, :: :: :: :: ::,--'' :,-' \ \
+. . . . .\\'|\\ \|/ '/ / :: :_--,, : , | )'; :: :: :: :,-'' : ,-' : : :\ \,
+. . . ./¯ :| \ |\ : |/\ :: ::----, :\/ :|/ :: :: ,-'' : :,-' : : : : : : ''-,,
+. . ..| : : :/ ''-(, :: :: :: '''''~,,,,,'' :: ,-'' : :,-' : : : : : : : : :,-'''\\
+. ,-' : : : | : : '') : : :¯''''~-,: : ,--''' : :,-'' : : : : : : : : : ,-' :¯'''''-,_ .
+./ : : : : :'-, :: | :: :: :: _,,-''''¯ : ,--'' : : : : : : : : : : : / : : : : : : :''-,
+/ : : : : : -, :¯'''''''''''¯ : : _,,-~'' : : : : : : : : : : : : : :| : : : : : : : : :
+: : : : : : : :¯''~~~~~~''' : : : : : : : : : : : : : : : : : : | : : : : : : : : :
+                             */
+                            result.addTransition(terminal, currState, trap);
+                        }
+                    }
+                }
+                curr = next;
+                done = !addedNew;
+            }
+
+            return result;
+        }
+
+        public HashSet<T> epsilonClosure(T state)
+        {
+            HashSet<T> eClosure = new HashSet<T>();
+            if (!Transitions.ContainsKey(state))
+            {
+                return eClosure;
+            }
+            if (Transitions[state].ContainsKey(Epsilon))
+            {
+                eClosure.UnionWith(Transitions[state][Epsilon]);
+            }
+            HashSet<T> eClosure2 = new HashSet<T>();
+            do
+            {
+                foreach (T eState in eClosure)
+                {
+                    eClosure2.UnionWith(epsilonClosure(eState));
+                }
+                eClosure.UnionWith(eClosure2);
+            }
+            while (eClosure2.Except(eClosure).Count() > 0);
+            eClosure.Add(state);
+            return eClosure;
+        }
     }
 }

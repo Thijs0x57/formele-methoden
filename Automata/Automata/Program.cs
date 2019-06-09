@@ -7,17 +7,14 @@ namespace Automata
         private static Regex expr1, expr2, expr3, expr4, expr5, a, b, all;
         private static DFA<int, char> dfa = new DFA<int, char>();
         private static NDFA<int, char> ndfa = new NDFA<int, char>('$');
+        private static NDFA<int, char> ndfa2 = new NDFA<int, char>('$');
         private static DFA<int, char> dfa1 = new DFA<int, char>();
         private static DFA<int, char> dfa2 = new DFA<int, char>();
 
         /* TODO
          * - NDFA -> DFA function
-         * - DFA reverse function
          * - minimaal één minimalisatie algoritme
          * - gelijkheid op reguliere expressies / (NDFA)
-         * - epsilon closure?
-         * 
-         * 
          */
         static void Main(string[] args)
         {
@@ -25,16 +22,20 @@ namespace Automata
             init();
 
             // Normal DFA & NDFA
-            TestDFA();
-            TestNDFA();
+            //TestDFA();
+            //TestNDFA();
 
-            // Regex & toNDFA
-            TestRegExp();
-            testLanguage();
+            //// Regex & toNDFA
+            //TestRegExp();
+            //testLanguage();
 
-            // DFA Operation: and, or & negative
-            testDfaOperation();
-            testReverseDFA();
+            //// DFA Operation: and, or & negative
+            //testDfaOperation();
+            //testReverseDFA();
+
+            // NDFA to DFA conversion
+            ndfaToDfa();
+            //testEpsilon();
         }
 
         public static void tester(String stringToTest, bool accepted)
@@ -133,6 +134,19 @@ namespace Automata
             GraphViz.PrintNDFA(dfa.reverse('$'), "dfa-reverse");
         }
 
+        public static void ndfaToDfa()
+        {
+            Console.WriteLine("--------------NDFA TO DFA--------------\nNDFA to DFA\n--------------NDFA TO DFA--------------");
+            GraphViz.PrintDFA(ndfa2.toDFA(), "ndfaToDfa");
+            //GraphViz.PrintNDFA(ndfa2, "ndfa");
+        }
+
+        public static void testEpsilon()
+        {
+            Console.WriteLine("--------------EPSILON TEST--------------\nepsilon\n--------------EPSILON TEST--------------");
+            Console.WriteLine(string.Join(",", ndfa.epsilonClosure(5)));
+        }
+
         public static void init()
         {
             // Begint met abb of eindigt op baab
@@ -177,6 +191,23 @@ namespace Automata
             ndfa.addTransition('$', 3, 9);
             ndfa.addTransition('$', 1, 9);
 
+            ndfa2.addStartState(1);
+            ndfa2.addEndState(3);
+            ndfa2.addEndState(5);
+            ndfa2.addTransition('a', 1, 3);
+            ndfa2.addTransition('b', 1, 3);
+            ndfa2.addTransition('b', 1, 2);
+            ndfa2.addTransition('b', 2, 3);
+            ndfa2.addTransition('$', 2, 3);
+            ndfa2.addTransition('a', 3, 4);
+            ndfa2.addTransition('b', 3, 4);
+            ndfa2.addTransition('a', 3, 5);
+            ndfa2.addTransition('a', 4, 3);
+            ndfa2.addTransition('a', 4, 2);
+            ndfa2.addTransition('$', 5, 4);
+            ndfa2.addTransition('b', 5, 5);
+
+            // eindigt op 'bbab'
             dfa1.addStartState(1);
             dfa1.addEndState(5);
             dfa1.addTransition('b', 1, 2);
@@ -190,6 +221,7 @@ namespace Automata
             dfa1.addTransition('a', 5, 1);
             dfa1.addTransition('b', 5, 3);
 
+            // even aantal b's
             dfa2.addStartState(1);
             dfa2.addEndState(1);
             dfa2.addTransition('a', 1, 1);
