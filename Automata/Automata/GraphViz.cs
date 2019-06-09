@@ -94,7 +94,7 @@ namespace Automata
         static void GenerateGraphFile(string data, string filename, Enums.GraphReturnType filetype)
         {
             Console.WriteLine($"filetype: {filetype}\n");
-            System.IO.File.WriteAllText("./fsm.gv", data);
+            System.IO.File.WriteAllText($"./{filename}.gv", data);
         }
     }
 }

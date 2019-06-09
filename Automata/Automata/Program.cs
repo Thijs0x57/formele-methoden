@@ -20,21 +20,21 @@ namespace Automata
             init();
 
             // Normal DFA & NDFA
-            //TestDFA();
-            //TestNDFA();
+            TestDFA();
+            TestNDFA();
 
             //// Regex & toNDFA
-            //TestRegExp();
-            //testLanguage();
+            TestRegExp();
+            testLanguage();
 
             //// DFA Operation: and, or & negative
-            //testDfaOperation();
-            //testReverseDFA();
+            testDfaOperation();
+            testReverseDFA();
 
             // NDFA to DFA conversion
-            //testNDFAtoDFA();
-            //testEpsilon();
-            //testSquashDFA();
+            testNDFAtoDFA();
+            testEpsilonClosure();
+            testSquashDFA();
             testMinimiseDFA();
         }
 
