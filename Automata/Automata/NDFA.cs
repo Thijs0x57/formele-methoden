@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -189,13 +189,12 @@ namespace Automata
                                     HashSet<T> postClosure = epsilonClosure(followedState);
                                     nextState.UnionWith(postClosure);
                                 }
-
-                                next.Add(nextState);
                             }
                         }
 
                         if (nextState.Count() > 0)
                         {
+                            next.Add(nextState);
                             // Add transition.
                             if (result.addTransition(terminal, currState, nextState))
                             {
@@ -270,6 +269,7 @@ namespace Automata
             HashSet<T> eClosure = new HashSet<T>();
             if (!Transitions.ContainsKey(state))
             {
+                eClosure.Add(state);
                 return eClosure;
             }
             if (Transitions[state].ContainsKey(Epsilon))

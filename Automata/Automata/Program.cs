@@ -12,7 +12,6 @@ namespace Automata
         private static DFA<int, char> dfa2 = new DFA<int, char>();
 
         /* TODO
-         * - minimaal één minimalisatie algoritme
          * - gelijkheid op reguliere expressies / (NDFA)
          */
         static void Main(string[] args)
@@ -33,8 +32,10 @@ namespace Automata
             //testReverseDFA();
 
             // NDFA to DFA conversion
-            ndfaToDfa();
+            //testNDFAtoDFA();
             //testEpsilon();
+            //testSquashDFA();
+            testMinimiseDFA();
         }
 
         public static void tester(String stringToTest, bool accepted)
@@ -133,22 +134,34 @@ namespace Automata
             GraphViz.PrintNDFA(dfa.reverse('$'), "dfa-reverse");
         }
 
-        public static void ndfaToDfa()
+        public static void testNDFAtoDFA()
         {
             Console.WriteLine("--------------NDFA TO DFA--------------\nNDFA to DFA\n--------------NDFA TO DFA--------------");
             GraphViz.PrintDFA(ndfa2.toDFA(), "ndfaToDfa");
             //GraphViz.PrintNDFA(ndfa2, "ndfa");
         }
 
-        public static void testEpsilon()
+        public static void testEpsilonClosure()
         {
-            Console.WriteLine("--------------EPSILON TEST--------------\nepsilon\n--------------EPSILON TEST--------------");
+            Console.WriteLine("--------------EPSILON CLOSURE--------------\nepsilon closure\n--------------EPSILON CLOSURE--------------");
             Console.WriteLine(string.Join(",", ndfa.epsilonClosure(5)));
+        }
+
+        public static void testSquashDFA()
+        {
+            Console.WriteLine("--------------SQUASH DFA--------------\nsquash dfa\n--------------SQUASH DFA--------------");
+            GraphViz.PrintDFA(dfa.squash(), "dfaSquash");
+        }
+
+        public static void testMinimiseDFA()
+        {
+            Console.WriteLine("--------------MINIMISE DFA--------------\nminimise dfa\n--------------MINIMISE DFA--------------");
+            GraphViz.PrintDFA(ndfa2.toDFA().minimise(), "dfaMinimise");
         }
 
         public static void init()
         {
-            // Begint met abb of eindigt op baab
+            // Starts with abb or ends with baab
             dfa.addStartState(0);
             dfa.addEndState(3);
             dfa.addEndState(8);
@@ -206,7 +219,7 @@ namespace Automata
             ndfa2.addTransition('$', 5, 4);
             ndfa2.addTransition('b', 5, 5);
 
-            // eindigt op 'bbab'
+            // ends with 'bbab'
             dfa1.addStartState(1);
             dfa1.addEndState(5);
             dfa1.addTransition('b', 1, 2);
@@ -220,7 +233,7 @@ namespace Automata
             dfa1.addTransition('a', 5, 1);
             dfa1.addTransition('b', 5, 3);
 
-            // even aantal b's
+            // Even amount of b's
             dfa2.addStartState(1);
             dfa2.addEndState(1);
             dfa2.addTransition('a', 1, 1);

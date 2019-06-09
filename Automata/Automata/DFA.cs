@@ -11,7 +11,7 @@ namespace Automata
         public HashSet<U> Alphabet { get; protected set; } = new HashSet<U>();
         public T StartState { get; protected set; }
         public HashSet<T> EndStates { get; protected set; } = new HashSet<T>();
-        public HashSet<T> states { get; protected set; } = new HashSet<T>();
+        public HashSet<T> States { get; protected set; } = new HashSet<T>();
 
         public bool addTransition(U input, T fromState, T toState)
         {
@@ -30,21 +30,21 @@ namespace Automata
             // Add input to alphabet so the alphabet can dynamically be changed
             Alphabet.Add(input);
             Transitions[fromState].Add(input, toState);
-            states.Add(fromState);
-            states.Add(toState);
+            States.Add(fromState);
+            States.Add(toState);
             return true;
         }
 
         public bool addStartState(T state)
         {
             StartState = state;
-            states.Add(state);
+            States.Add(state);
             return true;
         }
 
         public bool addEndState(T state)
         {
-            states.Add(state);
+            States.Add(state);
             return EndStates.Add(state);
         }
 
@@ -128,8 +128,8 @@ namespace Automata
             DFA<T, U> result = new DFA<T, U>();
             result.addStartState(StartState);
             result.Transitions = Transitions;
-            result.states = states;
-            foreach (var state in states)
+            result.States = States;
+            foreach (var state in States)
             {
                 if (!EndStates.Contains(state))
                     result.addEndState(state);
@@ -148,10 +148,28 @@ namespace Automata
             }
 
             forEachTransition((terminal, fromState, toState) 
-                => result.addTransition(terminal, fromState, toState));
+                => result.addTransition(terminal, toState, fromState));
             return result;
         }
-       
+
+        public DFA<int, string> minimise()
+        {
+            string epsilon = Guid.NewGuid().ToString();
+            return squash().reverse(epsilon).toDFA().squash().reverse(epsilon).toDFA().squash();
+        }
+
+        public DFA<int, string> squash()
+        {
+            DFA<int, string> result = new DFA<int, string>();
+            List<T> states = States.ToList();
+            result.addStartState(states.IndexOf(StartState));
+            forEachTransition((terminal, fromState, toState) => result.addTransition(terminal.ToString(), states.IndexOf(fromState), states.IndexOf(toState)));
+            foreach (T endState in EndStates)
+            {
+                result.addEndState(states.IndexOf(endState));
+            }
+            return result;
+        }
 
         public void forEachTransition(Action<U, T, T> action)
         {
